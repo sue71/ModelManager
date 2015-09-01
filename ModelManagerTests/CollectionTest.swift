@@ -14,7 +14,7 @@ import XCTest
 class CollectionTests: XCTestCase {
     
     let modelManager:TSTModelManager = TSTModelManager.sharedInstance
-    let collection:TSTCollectionBase = TSTCollectionBase()
+    let collection:TSTCollectionBase = TSTCollectionBase(modelId: "todoCollection")
     let model:TSTModelBase = TSTModelBase(modelId: "model")
     
     override func setUp() {

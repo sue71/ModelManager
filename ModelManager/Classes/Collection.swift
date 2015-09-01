@@ -8,7 +8,14 @@
 
 import Foundation
 
-public class TSTCollectionBase:TSTEvents {
+public class TSTCollectionBase:TSTModelBase {
+    deinit {
+        for model in models {
+            model.removeObserver(observer: self)
+        }
+        self.models.removeAll(keepCapacity: false)
+    }
+    
     public var models:[TSTModelBase] = []
     
     /**
@@ -70,7 +77,7 @@ public class TSTCollectionBase:TSTEvents {
     
     :returns:
     */
-    public func keyForChange() -> String {
+    public override func keyForChange() -> String {
         return TSTCollectionChangeKey
     }
     

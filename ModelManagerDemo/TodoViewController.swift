@@ -1,4 +1,3 @@
-//
 //  TodoViewController.swift
 //  ModelManager
 //
@@ -11,6 +10,11 @@ import UIKit
 import ModelManager
 
 class TodoCollection: TSTCollectionBase, UITableViewDataSource {
+    
+    deinit {
+        NSLog("[deinit][TodoCollection]")
+    }
+    
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.models.count
     }
@@ -24,6 +28,10 @@ class TodoCollection: TSTCollectionBase, UITableViewDataSource {
 }
 
 class TodoModel: TSTModelBase {
+    deinit {
+        NSLog("[deinit][TodoModel]")
+    }
+    
     var title:String = "" {
         didSet {
             self.sendChangeEvent(self.title)
@@ -53,7 +61,7 @@ class TodoView: UITableViewCell {
     @IBOutlet weak var doneSwitch: UISwitch!
     
     deinit {
-        self.model?.removeObserver()
+        self.model?.removeObserver(observer: self)
     }
     
     override func awakeFromNib() {
@@ -77,19 +85,26 @@ class TodoViewController: UIViewController, UITableViewDelegate, UITextFieldDele
     
     @IBOutlet weak var tableView: UITableView!
     
-    var todoCollection = TodoCollection()
-    @IBOutlet weak var counterLabel: UILabel!
+    var todoCollection:TodoCollection! = TodoCollection(modelId: "todoCollection")
+    @IBOutlet weak var newLabel: UILabel!
     @IBOutlet weak var textField: UITextField!
+    deinit {
+        NSLog("[deinit][TodoViewController]")
+        self.todoCollection.removeObserver(observer:self)
+        TSTModelManager.sharedInstance.disposeModel(self.todoCollection)
+    }
+    
+    required init(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        
+        TSTModelManager.sharedInstance.setModel(self.todoCollection)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.tableView.delegate = self
         self.tableView.dataSource = self.todoCollection
-        
-        self.todoCollection.addObserver(observer: self, eventName: self.todoCollection.keyForChange(), once: false) {[weak self] (args) -> Void in
-            self?.didChangeCollection()
-        }
         
         self.todoCollection.addObserver(observer: self, eventName: self.todoCollection.keyForAdd(), once: false) {[weak self] (args) -> Void in
             self?.tableView.reloadData()
@@ -108,15 +123,6 @@ class TodoViewController: UIViewController, UITableViewDelegate, UITextFieldDele
         return true
     }
     
-    func didChangeCollection() {
-        let count = self.todoCollection.models.filter({ (model:TSTModelBase) -> Bool in
-            let model = model as! TodoModel
-            return model.done
-        }).count.description
-        
-        self.counterLabel.text = count
-    }
-    
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 1
     }
@@ -126,5 +132,27 @@ class TodoViewController: UIViewController, UITableViewDelegate, UITextFieldDele
     
     func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
         return 50
+    }
+    
+    override func viewDidDisappear(animated: Bool) {
+        super.viewDidDisappear(animated)
+    }
+}
+
+class DoneLabel: UILabel {
+    
+    required init(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        
+        let model:TSTCollectionBase? = TSTModelManager.sharedInstance.getModel("todoCollection") as? TSTCollectionBase
+        if let collection = model {
+            collection.addObserver(observer: self, eventName: collection.keyForChange(), forKeyPath: nil, once: false, listener: {[weak self] (args, keyPath) -> () in
+                let count = collection.models.filter({ (model:TSTModelBase) -> Bool in
+                    let model = model as! TodoModel
+                    return model.done
+                }).count.description
+                self?.text = "done:\(count)"
+                })
+        }
     }
 }

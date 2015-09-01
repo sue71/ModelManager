@@ -11,7 +11,8 @@ import Foundation
 public struct TSTEventObject {
     var listener:TSTEventHandler
     var once:Bool = false
-    var observer: NSObject?
+    weak var observer: NSObject?
+    var forKeyPath: String?
 }
 
 public class TSTEvents:NSObject {
@@ -20,6 +21,8 @@ public class TSTEvents:NSObject {
     private var _observeId:String!
     
     deinit {
+        self.removeObserving()
+        self.removeObserver()
         self._events.removeAll(keepCapacity: false)
         self._observing.removeAll(keepCapacity: false)
     }
@@ -29,7 +32,7 @@ public class TSTEvents:NSObject {
         var count:Int = 0
         for var i = 0; i < listeners.count; i++ {
             var event = listeners[count]
-            event.listener(args: args)
+            event.listener(args: args, keyPath: event.forKeyPath)
             if event.once {
                 self._events[eventName]?.removeAtIndex(count)
                 continue
@@ -95,12 +98,12 @@ public class TSTEvents:NSObject {
     :param: once      once flag
     :param: listener  listener
     */
-    public func addObserver(observer: NSObject? = nil, eventName:String, once:Bool = false, listener:TSTEventHandler) {
+    public func addObserver(observer: NSObject? = nil, eventName:String, forKeyPath: String? = nil, once:Bool = false, listener:TSTEventHandler) {
         if self._events[eventName] == nil {
             self._events[eventName] = []
         }
         
-        let event = TSTEventObject(listener: listener, once: once, observer: observer)
+        let event = TSTEventObject(listener: listener, once: once, observer: observer, forKeyPath: forKeyPath)
         self._events[eventName]?.append(event)
     }
     
@@ -118,28 +121,31 @@ public class TSTEvents:NSObject {
         } else {
             events = [eventName!]
         }
-    
+        
         for eventName in events {
-            for var i = 0; i < self._events[eventName]?.count; i++ {
-                var listeners = self.getListeners(eventName)
-                var event = listeners[i]
+            let listeners = self.getListeners(eventName)
+            var newList:[TSTEventObject] = []
+            for var i = 0; i < listeners.count; i++ {
+                let event = listeners[i]
                 if let listener = listenerOrNil {
                     if listener == event.listener {
-                        self._events[eventName]?.removeAtIndex(i)
                         continue
                     }
                 }
                 
                 if let observer: NSObject = observerOrNil {
                     if observer == event.observer {
-                        self._events[eventName]?.removeAtIndex(i)
+                        continue
                     }
-                    continue
                 }
                 
-                self._events[eventName]?.removeAtIndex(i)
+                newList.append(event)
             }
         
+            self._events[eventName]?.removeAll(keepCapacity: false)
+            if newList.count > 0 {
+                self._events[eventName] = newList
+            }
         }
         
     }

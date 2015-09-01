@@ -13,7 +13,7 @@ public let TSTCollectionChangeKey = "TSTCollectionChangeKey"
 public let TSTCollectionAddKey = "TSTCollectionAddKey"
 public let TSTCollectionRemoveKey = "TSTCollectionRemoveKey"
 
-public typealias TSTEventHandler = (args: [NSObject]) -> ()
+public typealias TSTEventHandler = (args: [NSObject], keyPath:String?) -> ()
 
 // Utility
 
@@ -23,7 +23,7 @@ public class TSTModelManager:NSObject {
     public static var sharedInstance : TSTModelManager = TSTModelManager()
     
     var models:[String:TSTModelBase] = [:]
-
+    
     /**
     Modelを保持する
     
@@ -51,6 +51,8 @@ public class TSTModelManager:NSObject {
     :param: model 破棄するModel
     */
     public func disposeModel(model:TSTModelBase) {
+        model.removeObserver()
+        model.removeObserving()
         self.models.removeValueForKey(model.modelId)
     }
     
@@ -60,6 +62,9 @@ public class TSTModelManager:NSObject {
     :param: name ModelのID
     */
     public func disposeModelByName(name:String) {
+        let model = self.models[name]
+        model?.removeObserver()
+        model?.removeObserving()
         self.models.removeValueForKey(name)
     }
 }

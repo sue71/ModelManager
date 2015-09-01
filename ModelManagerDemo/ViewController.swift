@@ -15,17 +15,6 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        
-        let navi = UINavigationController(navigationBarClass: nil, toolbarClass: nil)
-        
-        var className = NSStringFromClass(TodoViewController).componentsSeparatedByString(".").last! as String
-        let storyBoard = UIStoryboard(name: className, bundle: nil)
-        let viewController = storyBoard.instantiateInitialViewController() as! UIViewController
-        
-        navi.pushViewController(viewController, animated: false)
-        self.centerViewController = navi
-        
-        self.view.addSubview(self.centerViewController.view)
     }
 
     override func didReceiveMemoryWarning() {
