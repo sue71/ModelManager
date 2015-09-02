@@ -16,6 +16,7 @@ class SampleModel:TSTModelBase {
             self.sendChangeEvent(self.hoge)
         }
     }
+    
     var fuga:String = "fuga" {
         didSet {
             self.sendChangeEvent(self.fuga)
@@ -48,15 +49,12 @@ class ModelManagerTests: XCTestCase {
         // This is an example of a functional test case.
         let expectation = expectationWithDescription("testSendEvent")
         
-        model.addObserver(eventName: "example", once: true) { (args, forKey) -> () in
-            if let strs:[String] = args as? [String] {
-                XCTAssertEqual("args", strs[0], "")
-                XCTAssertEqual("test", strs[1], "")
-                expectation.fulfill()
-            }
+        model.addObserver(eventKey: "example", once: true) { (value:String, forKeyPath:String?) -> () in
+            XCTAssertEqual("args", value, "")
+            expectation.fulfill()
         }
         
-        model.sendEvent("example", args: "args", "test")
+        model.sendEvent("example", value: "args")
         
         waitForExpectationsWithTimeout(2.0, handler: { (error) -> Void in
             XCTAssertNil(error, "error:\(error)")
@@ -67,17 +65,12 @@ class ModelManagerTests: XCTestCase {
         // This is an example of a functional test case.
         let expectation = expectationWithDescription("testSendEventWithOnceOption")
         
-        model.addObserver(eventName: "example", once: true) { (args, forKey) -> () in
-            if let strs:[String] = args as? [String] {
-                XCTAssertEqual("args", strs[0], "")
-                XCTAssertEqual("test", strs[1], "")
-                
-                expectation.fulfill()
-            }
+        model.addObserver(eventKey: "example", once: true) { (str:String, forKeyPath:String?) -> () in
+            XCTAssertEqual("args", str, "")
+            expectation.fulfill()
         }
         
-        model.sendEvent("example", args: "args", "test")
-        model.sendEvent("example", args: "args", "test")
+        model.sendEvent("example", value: "args")
         
         waitForExpectationsWithTimeout(2.0, handler: { (error) -> Void in
             XCTAssertNil(error, "error:\(error)")
@@ -88,11 +81,9 @@ class ModelManagerTests: XCTestCase {
         // This is an example of a functional test case.
         let expectation = expectationWithDescription("testSendChangeEvent")
         
-        sampleModel.addObserver(eventName: sampleModel.keyForChange(), once: true) { (args, forKey) -> () in
-            if let strs:[String] = args as? [String] {
-                XCTAssertEqual("fugafuga", strs[0], "")
-                expectation.fulfill()
-            }
+        sampleModel.addObserver(eventKey: sampleModel.keyForChange(), once: true) { (str:String, forKeyPath:String?) -> () in
+            XCTAssertEqual("fugafuga", str, "")
+            expectation.fulfill()
         }
         
         sampleModel.fuga = "fugafuga"
@@ -104,12 +95,13 @@ class ModelManagerTests: XCTestCase {
     
     func testObserveEvent() {
         let expectation = expectationWithDescription("testObserveEvent")
-        eventemitter.addObserveTo(model, eventName: "hogehoge", once: false) { (args, forKey) -> () in
-            XCTAssertEqual("hogehoge", args[0] as! String, "")
+        
+        eventemitter.addObserveTo(model, eventKey: "hogehoge", once: false) { (arg:String, forKeyPath:String?) -> () in
+            XCTAssertEqual("hogehoge", arg, "")
             expectation.fulfill()
         }
         
-        model.sendEvent("hogehoge", args: "hogehoge")
+        model.sendEvent("hogehoge", value: "hogehoge")
         
         waitForExpectationsWithTimeout(2.0, handler: { (error) -> Void in
             XCTAssertNil(error, "error:\(error)")
@@ -120,23 +112,19 @@ class ModelManagerTests: XCTestCase {
         let expectation = expectationWithDescription("testSendChangeEvent")
         let eventemitter2 = TSTEvents()
         
-        eventemitter.addObserveTo(model, eventName: "hogehoge", once: true) { (args, forKey) -> () in
+        eventemitter.addObserveTo(model, eventKey: "hogehoge", once: true) { (value:String, forKeyPath:String?) -> Void in
             XCTFail("this method should not be called")
         }
         
-        eventemitter.addObserveTo(sampleModel, eventName: "hogehoge", once: true) { (args, forKey) -> () in
-            XCTAssertEqual("hogehoge", args[0] as! String, "")
-        }
-        
-        eventemitter2.addObserveTo(model, eventName: "hogehoge", once: true) { (args, forKey) -> () in
-            XCTAssertEqual("hogehoge", args[0] as! String, "")
+        eventemitter2.addObserveTo(model, eventKey: "hogehoge", once: true) { (value: String, forKeyPath:String?) -> () in
+            XCTAssertEqual("hogehoge", value, "")
             expectation.fulfill()
         }
         
         eventemitter.removeObserving(target: model)
         
-        model.sendEvent("hogehoge", args: "hogehoge")
-        sampleModel.sendEvent("hogehoge", args: "hogehoge")
+        model.sendEvent("hogehoge", value: "hogehoge")
+        sampleModel.sendEvent("hogehoge", value: "hogehoge")
         
         waitForExpectationsWithTimeout(2.0, handler: { (error) -> Void in
             XCTAssertNil(error, "error:\(error)")
@@ -150,12 +138,9 @@ class ModelManagerTests: XCTestCase {
     
     func testCollectionAdd() {
         let expectation = expectationWithDescription("testCollectionAdd")
-        self.collection.addObserver(eventName: collection.keyForAdd(), once: false) { (args, forKey) -> () in
-            if let model = args[0] as? TSTModelBase {
-                XCTAssertEqual(model.modelId, "model", "")
-                
-                expectation.fulfill()
-            }
+        self.collection.addObserver(eventKey: collection.keyForAdd(), once: false) { (value:TSTModelBase, forKeyPath) -> () in
+            XCTAssertEqual(value.modelId, "model", "")
+            expectation.fulfill()
         }
         
         self.collection.addModel(model)
@@ -167,12 +152,9 @@ class ModelManagerTests: XCTestCase {
     
     func testCollectionRemove() {
         let expectation = expectationWithDescription("testCollectionRemove")
-        self.collection.addObserver(eventName: collection.keyForRemove(), once: false) { (args, forKey) -> () in
-            if let model = args[0] as? TSTModelBase {
-                XCTAssertEqual(model.modelId, "model", "")
-                
-                expectation.fulfill()
-            }
+        self.collection.addObserver(eventKey: collection.keyForRemove(), once: false) { (model:TSTModelBase, forKeyPath) -> () in
+            XCTAssertEqual(model.modelId, "model", "")
+            expectation.fulfill()
         }
         
         self.collection.addModel(model)
@@ -185,12 +167,9 @@ class ModelManagerTests: XCTestCase {
     
     func testCollectionUpdate() {
         let expectation = expectationWithDescription("testCollectionUpdate")
-        self.collection.addObserver(eventName: collection.keyForChange(), once: false) { (args, forKey) -> () in
-            if let model = args[0] as? TSTModelBase {
-                XCTAssertEqual(model.modelId, "sample", "")
-                
-                expectation.fulfill()
-            }
+        self.collection.addObserver(eventKey: collection.keyForChange(), once: false) { (model:TSTModelBase, forKeyPath) -> () in
+            XCTAssertEqual(model.modelId, "sample", "")
+            expectation.fulfill()
         }
         
         self.collection.addModel(sampleModel)

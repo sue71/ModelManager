@@ -26,13 +26,13 @@ public class TSTCollectionBase:TSTModelBase {
     :param: model Model
     */
     public func addModel(model: TSTModelBase) {
-        model.addObserver(observer: self, eventName: model.keyForChange(), once: false) {[weak self] (args) -> () in
+        model.addObserver(observer: self, eventKey: model.keyForChange(), once: false) {[weak self] (value: Any, forKeyPath) -> () in
             if let blockSelf = self {
-                blockSelf.sendEvent(blockSelf.keyForChange(), args: model)
+                blockSelf.sendEvent(blockSelf.keyForChange(), value: model)
             }
         }
         self.models.append(model)
-        self.sendEvent(self.keyForAdd(), args: model)
+        self.sendEvent(self.keyForAdd(), value: model)
     }
     
     /**
@@ -53,11 +53,12 @@ public class TSTCollectionBase:TSTModelBase {
     :param: model Model
     */
     public func remove(model:TSTModelBase) {
-        self.removeObserving(target: model)
+        model.removeObserver(observer: self)
         for var i = 0; i < self.models.count; i++ {
             if model == self.models[i] {
                 self.models.removeAtIndex(i)
-                self.sendEvent(self.keyForRemove(), args: model)
+                
+                self.sendEvent(self.keyForRemove(), value: model)
                 break
             }
         }

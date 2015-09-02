@@ -20,7 +20,7 @@ public func == <A,R>(lhs:A->R,rhs:A->R)->Bool {
     let (tl, tr) = (peekFunc(lhs), peekFunc(rhs))
     return tl.0 == tr.0 && tl.1 == tr.1
 }
-    
+
 public func classNameWithoutNamespace(object:AnyClass) -> String {
     let className = NSStringFromClass(object)
     if let range = className.rangeOfString(".") {

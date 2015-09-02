@@ -34,13 +34,14 @@ class TodoModel: TSTModelBase {
     
     var title:String = "" {
         didSet {
-            self.sendChangeEvent(self.title)
+            self.sendChangeEvent(self.title, forKeyPath: "title")
         }
     }
     
     var done:Bool = false {
         didSet {
-            self.sendChangeEvent(self.done)
+            
+            self.sendChangeEvent(self.done, forKeyPath: "done")
         }
     }
 }
@@ -51,7 +52,7 @@ class TodoView: UITableViewCell {
             self.model?.removeObserver(observer: self)
         }
         didSet {
-            self.model!.addObserver(observer:self, eventName: self.model!.keyForChange(), once: false) {[weak self] (args) -> Void in
+            self.model!.addObserver(observer:self, eventKey: self.model!.keyForChange(), once: false) {[weak self] (args:Any, forKeyPath) -> Void in
                 self?.updateView()
             }
             self.updateView()
@@ -90,7 +91,6 @@ class TodoViewController: UIViewController, UITableViewDelegate, UITextFieldDele
     @IBOutlet weak var textField: UITextField!
     deinit {
         NSLog("[deinit][TodoViewController]")
-        self.todoCollection.removeObserver(observer:self)
         TSTModelManager.sharedInstance.disposeModel(self.todoCollection)
     }
     
@@ -106,7 +106,7 @@ class TodoViewController: UIViewController, UITableViewDelegate, UITextFieldDele
         self.tableView.delegate = self
         self.tableView.dataSource = self.todoCollection
         
-        self.todoCollection.addObserver(observer: self, eventName: self.todoCollection.keyForAdd(), once: false) {[weak self] (args) -> Void in
+        self.todoCollection.addObserver(observer: self, eventKey: self.todoCollection.keyForAdd(), once: false) {[weak self] (args:TSTModelBase, forKeyPath) -> Void in
             self?.tableView.reloadData()
         }
         
@@ -146,13 +146,13 @@ class DoneLabel: UILabel {
         
         let model:TSTCollectionBase? = TSTModelManager.sharedInstance.getModel("todoCollection") as? TSTCollectionBase
         if let collection = model {
-            collection.addObserver(observer: self, eventName: collection.keyForChange(), forKeyPath: nil, once: false, listener: {[weak self] (args, keyPath) -> () in
+            collection.addObserver(observer: self, eventKey: collection.keyForChange(), forKeyPath: nil, once: false) { [weak self] (args:TSTModelBase, keyPath) -> () in
                 let count = collection.models.filter({ (model:TSTModelBase) -> Bool in
                     let model = model as! TodoModel
                     return model.done
                 }).count.description
                 self?.text = "done:\(count)"
-                })
+            }
         }
     }
 }

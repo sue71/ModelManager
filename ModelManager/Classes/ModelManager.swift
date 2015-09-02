@@ -13,8 +13,6 @@ public let TSTCollectionChangeKey = "TSTCollectionChangeKey"
 public let TSTCollectionAddKey = "TSTCollectionAddKey"
 public let TSTCollectionRemoveKey = "TSTCollectionRemoveKey"
 
-public typealias TSTEventHandler = (args: [NSObject], keyPath:String?) -> ()
-
 // Utility
 
 // TSTModelManager
@@ -53,7 +51,7 @@ public class TSTModelManager:NSObject {
     public func disposeModel(model:TSTModelBase) {
         model.removeObserver()
         model.removeObserving()
-        self.models.removeValueForKey(model.modelId)
+        self.models[model.modelId] = nil
     }
     
     /**
@@ -65,6 +63,6 @@ public class TSTModelManager:NSObject {
         let model = self.models[name]
         model?.removeObserver()
         model?.removeObserving()
-        self.models.removeValueForKey(name)
+        self.models[name] = nil
     }
 }

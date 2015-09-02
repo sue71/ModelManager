@@ -8,16 +8,9 @@
 
 import Foundation
 
-public struct TSTEventObject {
-    var listener:TSTEventHandler
-    var once:Bool = false
-    weak var observer: NSObject?
-    var forKeyPath: String?
-}
-
 public class TSTEvents:NSObject {
-    private var _events:[String: [TSTEventObject]] = [:]
-    private var _observing:[String: TSTEvents] = [:]
+    private var _events:[TSTEventObject] = []
+    private var _observing:[String:TSTEvents] = [:]
     private var _observeId:String!
     
     deinit {
@@ -27,21 +20,48 @@ public class TSTEvents:NSObject {
         self._observing.removeAll(keepCapacity: false)
     }
     
-    public func sendEvent(eventName:String, args: NSObject...) {
-        let listeners:[TSTEventObject] = self.getListeners(eventName)
-        var count:Int = 0
-        for var i = 0; i < listeners.count; i++ {
-            var event = listeners[count]
-            event.listener(args: args, keyPath: event.forKeyPath)
-            if event.once {
-                self._events[eventName]?.removeAtIndex(count)
-                continue
+    public func sendEvent<U:Equatable, T>(eventKey:U, value: T, forKeyPath:String? = nil) {
+        let listeners:[TSTEventObject] = self.getEvents(eventKey)
+        var removeEvents: [TSTEventObject] = []
+        
+        for i in 0..<listeners.count {
+            var event = listeners[i]
+            if let handler = event.handler as? (value: T, forKeyPath: String?) -> Void {
+                handler(value: value, forKeyPath: forKeyPath)
             }
-            count++
+            
+            if forKeyPath != nil && forKeyPath! == event.forKeyPath {
+                if let handler = event.handler as? (value: T, forKeyPath: String?) -> Void {
+                    handler(value: value, forKeyPath: forKeyPath!)
+                }
+            }
+            
+            if event.once {
+                removeEvents.append(event)
+            }
         }
+        
+        var events = self._events
+        
+        self._events = self._events.filter({ (event:TSTEventObject) -> Bool in
+            return removeEvents.filter({ (remove:TSTEventObject) -> Bool in
+                var isEqualFunc:Bool = false
+                if let leftHandler = event.handler as? (value:T, forKeyPath: String) -> (), rightHandler = remove.handler as? (value:T, forKeyPath: String) -> () where leftHandler == rightHandler {
+                    isEqualFunc = true
+                }
+                if event.handler == nil && remove.handler == nil {
+                    isEqualFunc = false
+                }
+                return event.eventKey as? U == remove.eventKey as? U &&
+                    event.forKeyPath == remove.forKeyPath &&
+                    event.observer == remove.observer &&
+                    event.once == remove.once &&
+                    isEqualFunc
+            }).count == 0
+        })
     }
     
-    public func addObserveTo(target: TSTEvents, eventName:String, once: Bool = false, callback: TSTEventHandler) {
+    public func addObserveTo<T>(target: TSTEvents, eventKey:String, forKeyPath: String? = nil, once: Bool = false, handler: ((value: T, forKeyPath: String?) -> Void)) {
         let id = uniqueId()
         
         if target._observeId == nil {
@@ -52,17 +72,47 @@ public class TSTEvents:NSObject {
             self._observing[id] = target
         }
         
-        target.addObserver(observer: self, eventName: eventName, once: once, listener: callback)
+        target.addObserver(observer: self, eventKey: eventKey, forKeyPath: forKeyPath, once: once, handler: handler)
     }
     
-    /**
-    remove observing
+    public func removeObserving(target: TSTEvents? = nil) {
+        if self._observing.isEmpty {
+            return
+        }
+        
+        var observing = self._observing
+        if target != nil {
+            if target!._observeId == nil {
+                return
+            }
+            observing = [target!._observeId: target!]
+        }
+        
+        for (observeId, object) in observing {
+            object.removeObserver(observer: self)
+            self._observing[object._observeId] = nil
+        }
+    }
     
-    :param: target    observing object
-    :param: eventName event name
-    :param: callback  listener
-    */
-    public func removeObserving(target: TSTEvents? = nil, eventName:String? = nil, callback: TSTEventHandler? = nil) {
+    public func removeObserving<T>(target: TSTEvents? = nil, handler: ((value:T, forKeyPath:String?) -> Void)?) {
+        if self._observing.isEmpty {
+            return
+        }
+        
+        var observing = self._observing
+        if target != nil {
+            if target!._observeId == nil {
+                return
+            }
+            observing = [target!._observeId: target!]
+        }
+        
+        for (observeId, object) in observing {
+            object.removeObserver(observer: self, handler: handler)
+        }
+    }
+    
+    public func removeObserving<U:Equatable>(target: TSTEvents? = nil, eventKey:U) {
         if self._observing.isEmpty {
             return
         }
@@ -77,12 +127,40 @@ public class TSTEvents:NSObject {
         
         for (observeId, object) in observing {
             
-            if eventName == nil {
-                for (eventName, event) in object._events {
-                    object.removeObserver(observer: self, eventName: eventName)
-                }
+            object.removeObserver(observer: self, eventKey: eventKey)
+            
+            if object._events.isEmpty {
+                self._observing[observeId] = nil
+            }
+        }
+    }
+    
+    /**
+    remove observing
+    
+    :param: target    observing object
+    :param: eventName event name
+    :param: callback  listener
+    */
+    public func removeObserving<U:Equatable, T>(target: TSTEvents? = nil, eventKey:U?, handler: ((value: T, forKeyPath: String?) -> Void)?) {
+        if self._observing.isEmpty {
+            return
+        }
+        
+        var observing = self._observing
+        if target != nil {
+            if target!._observeId == nil {
+                return
+            }
+            observing = [target!._observeId: target!]
+        }
+        
+        for (observeId, object) in observing {
+            
+            if eventKey == nil {
+                object.removeObserver(observer: self, handler: handler)
             } else {
-                object.removeObserver(observer: self, eventName: eventName!, listener: callback)
+                object.removeObserver(observer: self, eventKey: eventKey!, handler: handler)
             }
             
             if object._events.isEmpty {
@@ -98,13 +176,9 @@ public class TSTEvents:NSObject {
     :param: once      once flag
     :param: listener  listener
     */
-    public func addObserver(observer: NSObject? = nil, eventName:String, forKeyPath: String? = nil, once:Bool = false, listener:TSTEventHandler) {
-        if self._events[eventName] == nil {
-            self._events[eventName] = []
-        }
-        
-        let event = TSTEventObject(listener: listener, once: once, observer: observer, forKeyPath: forKeyPath)
-        self._events[eventName]?.append(event)
+    public func addObserver<U:Equatable, T>(observer: NSObject? = nil, eventKey:U, forKeyPath: String? = nil, once:Bool = false, handler:((value:T, forKeyPath: String?) -> ())) {
+        let event = TSTEventObject(eventKey: eventKey, forKeyPath: forKeyPath, handler: handler, once: once, observer: observer)
+        self._events.append(event)
     }
     
     /**
@@ -113,45 +187,108 @@ public class TSTEvents:NSObject {
     :param: eventName     event name
     :param: listenerOrNil listener
     */
-    public func removeObserver(observer observerOrNil: NSObject? = nil, eventName:String? = nil, listener listenerOrNil:TSTEventHandler? = nil) {
-        var removeIndex:[Int] = []
-        var events:[String] = []
-        if eventName == nil {
-            events = Array(self._events.keys)
-        } else {
-            events = [eventName!]
-        }
-        
-        for eventName in events {
-            let listeners = self.getListeners(eventName)
-            var newList:[TSTEventObject] = []
-            for var i = 0; i < listeners.count; i++ {
-                let event = listeners[i]
-                if let listener = listenerOrNil {
-                    if listener == event.listener {
-                        continue
-                    }
+    public func removeObserver<U:Equatable, T>(observer observerOrNil: NSObject? = nil, eventKey:U?, handler handlerOrNil:((value:T, forKeyPath: String?) -> ())?) {
+        self._events = self._events.filter({ (event) -> Bool in
+            if let handler = handlerOrNil {
+                if let left = handlerOrNil, right = (event.handler as? ((value:T, forKeyPath:String?) -> Void)) where left == right {
+                    return false
                 }
-                
-                if let observer: NSObject = observerOrNil {
-                    if observer == event.observer {
-                        continue
-                    }
+            }
+            
+            if let observer: NSObject = observerOrNil {
+                if observer == event.observer {
+                    return false
                 }
-                
-                newList.append(event)
             }
-        
-            self._events[eventName]?.removeAll(keepCapacity: false)
-            if newList.count > 0 {
-                self._events[eventName] = newList
+            
+            if let leftKey = eventKey, rightKey = event.eventKey as? U where leftKey == rightKey {
+                return false
             }
-        }
-        
+            
+            return true
+        })
     }
     
-    private func getListeners(eventName:String) -> [TSTEventObject] {
-        return self._events[eventName] ?? []
+    /**
+    remove event by name and listener
+    
+    :param: eventName     event name
+    :param: listenerOrNil listener
+    */
+    public func removeObserver<T>(observer observerOrNil: NSObject? = nil, handler handlerOrNil:((value:T, forKeyPath: String?) -> ())?) {
+        self._events = self._events.filter({ (event) -> Bool in
+            if let handler = handlerOrNil {
+                if let left = handlerOrNil, right = (event.handler as? ((value:T, forKeyPath:String?) -> Void)) where left == right {
+                    return false
+                }
+            }
+            
+            if let observer: NSObject = observerOrNil {
+                if observer == event.observer {
+                    return false
+                }
+            }
+            
+            return true
+        })
     }
     
+    /**
+    remove event by name and listener
+    
+    :param: eventName     event name
+    :param: listenerOrNil listener
+    */
+    public func removeObserver<U:Equatable>(observer observerOrNil: NSObject? = nil, eventKey:U?) {
+        self._events = self._events.filter({ (event) -> Bool in
+            if let observer: NSObject = observerOrNil {
+                if observer == event.observer {
+                    return false
+                }
+            }
+            
+            if let leftKey = eventKey, rightKey = event.eventKey as? U where leftKey == rightKey {
+                return false
+            }
+            
+            return true
+        })
+    }
+    
+    /**
+    remove event by observer
+    */
+    public func removeObserver(observer observerOrNil: NSObject? = nil) {
+        self._events = self._events.filter({ (event) -> Bool in
+            if let observer = observerOrNil, eventObserver = event.observer {
+                if observer == eventObserver {
+                    return false
+                } else {
+                    return true
+                }
+            }
+            
+            return false
+        })
+    }
+    
+    private func getEvents<U:Equatable>(eventKey:U) -> [TSTEventObject] {
+        return self._events.filter({ (event:TSTEventObject) -> Bool in
+            if let targetKey = event.eventKey as? U where targetKey == eventKey {
+                return true
+            } else {
+                return false
+            }
+        })
+    }
+    
+}
+
+public struct TSTEventObject {
+    var eventKey: Any?
+    var forKeyPath: String?
+    var handler: Any?
+    var once:Bool = false
+    
+    weak var observer: NSObject?
 }
