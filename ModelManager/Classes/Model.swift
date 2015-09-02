@@ -25,7 +25,7 @@ public class TSTModelBase:TSTEvents {
     */
     public func sendChangeEvent<T>(changed: T, forKeyPath: String) {
         self.sendEvent(self.keyForChange(), value: changed)
-        self.sendEvent(self.keyForChange(), value: changed as! Any)
+        self.sendEvent(self.keyForChange(), value: changed as Any)
     }
     
     /**
