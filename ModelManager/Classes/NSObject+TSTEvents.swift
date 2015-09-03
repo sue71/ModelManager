@@ -28,6 +28,9 @@ extension NSObject {
     }
     
     public func tst_addObserver<U:Equatable, T>(observer: NSObject, eventKey:U, forKeyPath keyPath: String? = nil, once:Bool = false, handler: ((value:T, forKeyPath:String?) -> Void)) {
+        if self._event == nil {
+            self._event = TSTEvents()
+        }
         self._event!.addObserver(observer: observer, eventKey: eventKey, forKeyPath: keyPath, once: once, handler: handler)
     }
     
