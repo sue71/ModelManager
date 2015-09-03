@@ -13,13 +13,13 @@ import ModelManager
 class SampleModel:TSTModelBase {
     var hoge:String = "hoge" {
         didSet {
-            self.sendChangeEvent(self.hoge)
+            self.sendChangeEvent(self.hoge, forKeyPath: __FUNCTION__)
         }
     }
     
     var fuga:String = "fuga" {
         didSet {
-            self.sendChangeEvent(self.fuga)
+            self.sendChangeEvent(self.fuga, forKeyPath: __FUNCTION__)
         }
     }
 }

@@ -23,7 +23,7 @@ public class TSTModelBase:TSTEvents {
     
     :param: changed 変更されたパラメータ
     */
-    public func sendChangeEvent<T>(changed: T, forKeyPath: String) {
+    public func sendChangeEvent<T>(changed: T, forKeyPath: String? = nil) {
         self.sendEvent(self.keyForChange(), value: changed)
         self.sendEvent(self.keyForChange(), value: changed as Any)
     }
