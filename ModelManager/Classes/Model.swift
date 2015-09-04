@@ -10,17 +10,15 @@ import Foundation
 
 // Modelの基底クラス
 public class TSTModelBase:TSTEvents {
+    public var key:Any!
     
-    public var modelId:String!
-    
-    public init(modelId: String) {
-        super.init()
-        self.modelId = modelId
+    public convenience init<U:Equatable>(key: U) {
+        self.init()
+        self.key = key
     }
     
     /**
     changeイベントを伝搬する
-    
     :param: changed 変更されたパラメータ
     */
     public func sendChangeEvent<T>(changed: T, forKeyPath: String? = nil) {

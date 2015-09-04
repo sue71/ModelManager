@@ -20,7 +20,16 @@ public let TSTCollectionRemoveKey = "TSTCollectionRemoveKey"
 public class TSTModelManager:NSObject {
     public static var sharedInstance : TSTModelManager = TSTModelManager()
     
-    var models:[String:TSTModelBase] = [:]
+    private var models:[Model] = []
+    
+    public func createModel<U: Equatable>(clazz: NSObject.Type, key: U) -> TSTEvents? {
+        if let model = clazz.new() as? TSTModelBase {
+            model.key = key
+            self.models.append(Model(key: key, object: model))
+            return model
+        }
+        return nil
+    }
     
     /**
     Modelを保持する
@@ -28,8 +37,8 @@ public class TSTModelManager:NSObject {
     :param: name ModelのIDになる文字列
     :param: model Modelのインスタンス
     */
-    public func setModel(model:TSTModelBase) {
-        self.models[model.modelId] = model
+    public func setModel(model: TSTModelBase) {
+        self.models.append(Model(key: model.key, object: model))
     }
     
     /**
@@ -39,30 +48,39 @@ public class TSTModelManager:NSObject {
     
     :returns: Modelが存在しない場合nilを返す
     */
-    public func getModel(name:String) -> TSTModelBase? {
-        return self.models[name]
+    public func getModel<U:Equatable>(key:U) -> TSTModelBase? {
+        var models = self.models.filter { (model) -> Bool in
+            if let targetKey = model.key as? U where targetKey == key {
+                return true
+            }
+            return false
+        }
+        var model:TSTModelBase? = models.count > 0 ? models[0].object : nil
+        
+        return model
     }
     
     /**
-    Modelを破棄する
+    keyを指定してModelを破棄
     
-    :param: model 破棄するModel
+    :param: key
     */
-    public func disposeModel(model:TSTModelBase) {
-        model.removeObserver()
-        model.removeObserving()
-        self.models[model.modelId] = nil
+    public func disposeModelByKey<U:Equatable>(key:U) {
+        self.models = self.models.filter({ (model) -> Bool in
+            if let targetKey = model.key as? U where targetKey == key {
+                
+                model.object.removeObserving()
+                model.object.removeObserver()
+                
+                return false
+            }
+            return true
+        })
     }
     
-    /**
-    IDを指定してModelを破棄
-    
-    :param: name ModelのID
-    */
-    public func disposeModelByName(name:String) {
-        let model = self.models[name]
-        model?.removeObserver()
-        model?.removeObserving()
-        self.models[name] = nil
+    private struct Model {
+        var key:Any
+        var object:TSTModelBase
     }
 }
+
