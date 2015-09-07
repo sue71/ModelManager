@@ -86,12 +86,12 @@ class TodoViewController: UIViewController, UITableViewDelegate, UITextFieldDele
     
     @IBOutlet weak var tableView: UITableView!
     
-    var todoCollection:TodoCollection! = TodoCollection(modelId: "todoCollection")
+    var todoCollection:TodoCollection! = TodoCollection(key: "todoCollection")
     @IBOutlet weak var newLabel: UILabel!
     @IBOutlet weak var textField: UITextField!
     deinit {
         NSLog("[deinit][TodoViewController]")
-        TSTModelManager.sharedInstance.disposeModel(self.todoCollection)
+        TSTModelManager.sharedInstance.disposeModelByKey(self.todoCollection.key as! String)
     }
     
     required init(coder aDecoder: NSCoder) {
@@ -115,7 +115,7 @@ class TodoViewController: UIViewController, UITableViewDelegate, UITextFieldDele
     
     func textFieldShouldReturn(textField: UITextField) -> Bool {
         self.textField.endEditing(true)
-        var model = TodoModel(modelId: "model")
+        var model = TodoModel(key: "model")
         model.title = textField.text
         
         self.todoCollection.addModel(model)
@@ -146,6 +146,8 @@ class DoneLabel: UILabel {
         
         let model:TSTCollectionBase? = TSTModelManager.sharedInstance.getModel("todoCollection") as? TSTCollectionBase
         if let collection = model {
+            collection.observeChangeEvent(observer: self, forKeyPath: collection.keyForChange(), once: false, handler: { (value:TSTModelBase, forKeyPath:String?) -> () in
+            })
             collection.addObserver(observer: self, eventKey: collection.keyForChange(), forKeyPath: nil, once: false) { [weak self] (args:TSTModelBase, keyPath) -> () in
                 let count = collection.models.filter({ (model:TSTModelBase) -> Bool in
                     let model = model as! TodoModel
