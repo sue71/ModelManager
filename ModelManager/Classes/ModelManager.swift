@@ -34,7 +34,16 @@ public class TSTModelManager:NSObject {
     /**
     Modelを保持する
     
-    :param: name ModelのIDになる文字列
+    :param: model Modelのインスタンス
+    :param: key キー名
+    */
+    public func setModel<U: Equatable>(model: TSTModelBase, key:U) {
+        self.models.append(Model(key: key, object: model))
+    }
+    
+    /**
+    Modelを保持する
+    
     :param: model Modelのインスタンス
     */
     public func setModel(model: TSTModelBase) {
