@@ -9,7 +9,7 @@
 import Foundation
 
 private var TSTEventsKey = 0
-extension NSObject {
+public extension NSObject {
     
     private var _event:TSTEvents? {
         get {
