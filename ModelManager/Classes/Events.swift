@@ -10,8 +10,8 @@ import Foundation
 
 public class TSTEvents:NSObject {
     private var _events:[TSTEventObject] = []
-    private var _observing:[String:TSTEvents] = [:]
-    private var _observeId:String!
+    public var _observing:[String:TSTEvents] = [:]
+    public var _observeId:String!
     
     deinit {
         self.removeObserving()
@@ -26,13 +26,14 @@ public class TSTEvents:NSObject {
         
         for i in 0..<listeners.count {
             var event = listeners[i]
-            if let handler = event.handler as? (value: T, forKeyPath: String?) -> Void {
-                handler(value: value, forKeyPath: forKeyPath)
-            }
             
-            if forKeyPath != nil && forKeyPath! == event.forKeyPath {
+            if let keyPath = event.forKeyPath {
+                if let handler = event.handler as? (value: T, forKeyPath: String?) -> Void where forKeyPath == keyPath {
+                    handler(value: value, forKeyPath: forKeyPath)
+                }
+            } else {
                 if let handler = event.handler as? (value: T, forKeyPath: String?) -> Void {
-                    handler(value: value, forKeyPath: forKeyPath!)
+                    handler(value: value, forKeyPath: forKeyPath)
                 }
             }
             
@@ -285,6 +286,12 @@ public class TSTEvents:NSObject {
 }
 
 public struct TSTEventObject {
+    var description:String {
+        get {
+            return "eventKey:\(eventKey), forKeyPath: \(forKeyPath), handler: \(handler), once: \(once)"
+        }
+    }
+    
     var eventKey: Any?
     var forKeyPath: String?
     var handler: Any?

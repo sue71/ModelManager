@@ -37,7 +37,7 @@ public class TSTModelManager:NSObject {
     :param: model Modelのインスタンス
     :param: key キー名
     */
-    public func setModel<U: Equatable>(model: TSTModelBase, key:U) {
+    public func setModel<U: Equatable>(model: NSObject, key:U) {
         self.models.append(Model(key: key, object: model))
     }
     
@@ -57,14 +57,14 @@ public class TSTModelManager:NSObject {
     
     :returns: Modelが存在しない場合nilを返す
     */
-    public func getModel<U:Equatable>(key:U) -> TSTModelBase? {
+    public func getModel<U:Equatable>(key:U) -> NSObject? {
         var models = self.models.filter { (model) -> Bool in
             if let targetKey = model.key as? U where targetKey == key {
                 return true
             }
             return false
         }
-        var model:TSTModelBase? = models.count > 0 ? models[0].object : nil
+        var model:NSObject? = models.count > 0 ? models[0].object : nil
         
         return model
     }
@@ -78,18 +78,19 @@ public class TSTModelManager:NSObject {
         self.models = self.models.filter({ (model) -> Bool in
             if let targetKey = model.key as? U where targetKey == key {
                 
-                model.object.removeObserving()
-                model.object.removeObserver()
+                model.object.tst_removeObserving()
+                model.object.tst_removeObserver()
                 
                 return false
             }
             return true
         })
+        NSLog("model: \(self.models.count)")
     }
     
     private struct Model {
         var key:Any
-        var object:TSTModelBase
+        var object:NSObject
     }
 }
 
