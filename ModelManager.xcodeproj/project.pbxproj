@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9E05C56F1BB4447A00B6B6F5 /* NSObject+TSTModelBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E05C56E1BB4447A00B6B6F5 /* NSObject+TSTModelBase.swift */; settings = {ASSET_TAGS = (); }; };
 		9E1715441B6875D60066E642 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1715431B6875D60066E642 /* AppDelegate.swift */; };
 		9E1715461B6875D60066E642 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1715451B6875D60066E642 /* ViewController.swift */; };
 		9E17154B1B6875D60066E642 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E17154A1B6875D60066E642 /* Images.xcassets */; };
@@ -25,7 +26,6 @@
 		9E2D091B1B81A6F900B115E7 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2D091A1B81A6F900B115E7 /* Model.swift */; };
 		9E2D091D1B81A72700B115E7 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2D091C1B81A72700B115E7 /* Collection.swift */; };
 		9E2FFB1E1B60CD910012847C /* CollectionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2FFB1D1B60CD910012847C /* CollectionTest.swift */; };
-		9E3E0F101B980DE8004771D6 /* NSObject+TSTEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E3E0F0F1B980DE8004771D6 /* NSObject+TSTEvents.swift */; };
 		9EE849CB1B81BA8A004596CC /* TopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE849CA1B81BA8A004596CC /* TopViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -67,6 +67,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9E05C56E1BB4447A00B6B6F5 /* NSObject+TSTModelBase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+TSTModelBase.swift"; sourceTree = "<group>"; };
 		9E17153F1B6875D60066E642 /* ModelManagerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ModelManagerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E1715421B6875D60066E642 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9E1715431B6875D60066E642 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -90,7 +91,6 @@
 		9E2D091A1B81A6F900B115E7 /* Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		9E2D091C1B81A72700B115E7 /* Collection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
 		9E2FFB1D1B60CD910012847C /* CollectionTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollectionTest.swift; sourceTree = "<group>"; };
-		9E3E0F0F1B980DE8004771D6 /* NSObject+TSTEvents.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+TSTEvents.swift"; sourceTree = "<group>"; };
 		9EE849CA1B81BA8A004596CC /* TopViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TopViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -229,12 +229,12 @@
 		9E2A72771B607A2D004B0ABA /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				9E05C56E1BB4447A00B6B6F5 /* NSObject+TSTModelBase.swift */,
 				9E2A72781B607A43004B0ABA /* ModelManager.swift */,
 				9E2D09161B81A6BC00B115E7 /* Events.swift */,
 				9E2D09181B81A6EC00B115E7 /* Util.swift */,
 				9E2D091A1B81A6F900B115E7 /* Model.swift */,
 				9E2D091C1B81A72700B115E7 /* Collection.swift */,
-				9E3E0F0F1B980DE8004771D6 /* NSObject+TSTEvents.swift */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -332,6 +332,8 @@
 		9E2A72521B607A17004B0ABA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftMigration = 0700;
+				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0640;
 				ORGANIZATIONNAME = "Masaki Sueda";
 				TargetAttributes = {
@@ -429,9 +431,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9E3E0F101B980DE8004771D6 /* NSObject+TSTEvents.swift in Sources */,
 				9E2D09171B81A6BC00B115E7 /* Events.swift in Sources */,
 				9E2D091D1B81A72700B115E7 /* Collection.swift in Sources */,
+				9E05C56F1BB4447A00B6B6F5 /* NSObject+TSTModelBase.swift in Sources */,
 				9E2D09191B81A6EC00B115E7 /* Util.swift in Sources */,
 				9E2A72791B607A43004B0ABA /* ModelManager.swift in Sources */,
 				9E2D091B1B81A6F900B115E7 /* Model.swift in Sources */,

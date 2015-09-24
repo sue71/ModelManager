@@ -27,7 +27,7 @@ public class TSTModelBase:TSTEvents {
     }
     
     public func observeChangeEvent<T>(observer: NSObject? = nil, forKeyPath: String? = nil, once: Bool, handler: ((value: T, forKeyPath: String?) -> ())) {
-        self.addObserver(observer: observer, eventKey: self.keyForChange(), forKeyPath: forKeyPath, once: once, handler: handler)
+        self.addObserver(observer, eventKey: self.keyForChange(), forKeyPath: forKeyPath, once: once, handler: handler)
     }
     
     /**

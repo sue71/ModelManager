@@ -73,7 +73,7 @@ public class TSTEvents:NSObject {
             self._observing[id] = target
         }
         
-        target.addObserver(observer: self, eventKey: eventKey, forKeyPath: forKeyPath, once: once, handler: handler)
+        target.addObserver(self, eventKey: eventKey, forKeyPath: forKeyPath, once: once, handler: handler)
     }
     
     public func removeObserving(target: TSTEvents? = nil) {

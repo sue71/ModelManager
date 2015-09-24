@@ -52,7 +52,7 @@ class TodoView: UITableViewCell {
             self.model?.removeObserver(observer: self)
         }
         didSet {
-            self.model!.addObserver(observer:self, eventKey: self.model!.keyForChange(), once: false) {[weak self] (args:Any, forKeyPath) -> Void in
+            self.model!.addObserver(self, eventKey: self.model!.keyForChange(), once: false) {[weak self] (args:Any, forKeyPath) -> Void in
                 self?.updateView()
             }
             self.updateView()
@@ -94,7 +94,7 @@ class TodoViewController: UIViewController, UITableViewDelegate, UITextFieldDele
         TSTModelManager.sharedInstance.disposeModelByKey(self.todoCollection.key as! String)
     }
     
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         
         TSTModelManager.sharedInstance.setModel(self.todoCollection)
@@ -106,7 +106,7 @@ class TodoViewController: UIViewController, UITableViewDelegate, UITextFieldDele
         self.tableView.delegate = self
         self.tableView.dataSource = self.todoCollection
         
-        self.todoCollection.addObserver(observer: self, eventKey: self.todoCollection.keyForAdd(), once: false) {[weak self] (args:TSTModelBase, forKeyPath) -> Void in
+        self.todoCollection.addObserver(self, eventKey: self.todoCollection.keyForAdd(), once: false) {[weak self] (args:TSTModelBase, forKeyPath) -> Void in
             self?.tableView.reloadData()
         }
         
@@ -115,8 +115,8 @@ class TodoViewController: UIViewController, UITableViewDelegate, UITextFieldDele
     
     func textFieldShouldReturn(textField: UITextField) -> Bool {
         self.textField.endEditing(true)
-        var model = TodoModel(key: "model")
-        model.title = textField.text
+        let model = TodoModel(key: "model")
+        model.title = textField.text!
         
         self.todoCollection.addModel(model)
         self.textField.text = nil
@@ -141,14 +141,14 @@ class TodoViewController: UIViewController, UITableViewDelegate, UITextFieldDele
 
 class DoneLabel: UILabel {
     
-    required init(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         
         let model:TSTCollectionBase? = TSTModelManager.sharedInstance.getModel("todoCollection") as? TSTCollectionBase
         if let collection = model {
-            collection.observeChangeEvent(observer: self, forKeyPath: collection.keyForChange(), once: false, handler: { (value:TSTModelBase, forKeyPath:String?) -> () in
+            collection.observeChangeEvent(self, forKeyPath: collection.keyForChange(), once: false, handler: { (value:TSTModelBase, forKeyPath:String?) -> () in
             })
-            collection.addObserver(observer: self, eventKey: collection.keyForChange(), forKeyPath: nil, once: false) { [weak self] (args:TSTModelBase, keyPath) -> () in
+            collection.addObserver(self, eventKey: collection.keyForChange(), forKeyPath: nil, once: false) { [weak self] (args:TSTModelBase, keyPath) -> () in
                 let count = collection.models.filter({ (model:TSTModelBase) -> Bool in
                     let model = model as! TodoModel
                     return model.done

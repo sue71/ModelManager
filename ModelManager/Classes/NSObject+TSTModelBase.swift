@@ -16,7 +16,7 @@ public extension NSObject {
             return objc_getAssociatedObject(self, &TSTModelBaseKey) as? TSTModelBase
         }
         set {
-            objc_setAssociatedObject(self, &TSTModelBaseKey, newValue, objc_AssociationPolicy(OBJC_ASSOCIATION_RETAIN_NONATOMIC))
+            objc_setAssociatedObject(self, &TSTModelBaseKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         }
     }
     
@@ -31,7 +31,7 @@ public extension NSObject {
         if self.tst_model == nil {
             self.tst_model = TSTModelBase()
         }
-        self.tst_model?.observeChangeEvent(observer: observer, forKeyPath: keyPath, once: false, handler: handler)
+        self.tst_model?.observeChangeEvent(observer, forKeyPath: keyPath, once: false, handler: handler)
     }
     
     public func tst_observeTo<T>(target: NSObject, forKeyPath keyPath: String? = nil, once: Bool = false, handler: ((value: T, forKeyPath: String?) -> Void)) {

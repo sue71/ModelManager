@@ -23,7 +23,7 @@ public class TSTModelManager:NSObject {
     private var models:[Model] = []
     
     public func createModel<U: Equatable>(clazz: NSObject.Type, key: U) -> TSTEvents? {
-        if let model = clazz.new() as? TSTModelBase {
+        if let model = clazz.init() as? TSTModelBase {
             model.key = key
             self.models.append(Model(key: key, object: model))
             return model
