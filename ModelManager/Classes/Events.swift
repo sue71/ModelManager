@@ -178,11 +178,11 @@ public class TSTEvents:NSObject {
     */
     public func removeObserver<U:Equatable>(observer observerOrNil: NSObject? = nil, eventKey:U?, handler handlerOrNil:TSTEventHandler? = nil) {
         self._events = self._events.filter({ (event) -> Bool in
-            if let handler = handlerOrNil where handler == event.handler {
+            if let handler = handlerOrNil, eventHandler = event.handler where handler == eventHandler {
                 return false
             }
             
-            if let observer = observerOrNil where observer == event.observer {
+            if let observer = observerOrNil, eventObserver = event.observer where observer == eventObserver {
                 return false
             }
             
@@ -202,11 +202,11 @@ public class TSTEvents:NSObject {
     */
     public func removeObserver(observer observerOrNil: NSObject? = nil, handler handlerOrNil:TSTEventHandler? = nil) {
         self._events = self._events.filter({ (event) -> Bool in
-            if let handler = handlerOrNil where handler == event.handler {
+            if let handler = handlerOrNil, eventHandler = event.handler where handler == eventHandler {
                 return false
             }
             
-            if let observer = observerOrNil where observer == event.observer {
+            if let observer = observerOrNil, eventObserver = event.observer where observer == eventObserver {
                 return false
             }
             
