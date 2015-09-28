@@ -20,29 +20,34 @@ public class TSTEvents:NSObject {
         self._observing.removeAll(keepCapacity: false)
     }
     
+    private func equalsHandlerType<T>(value: T, handler:Any) -> Bool {
+        return Mirror(reflecting: handler).subjectType is ((value: T, forKeyPath: String?) -> Void).Type
+    }
+    
     public func sendEvent<U:Equatable, T>(eventKey:U, value: T, forKeyPath:String? = nil) {
         let listeners:[TSTEventObject] = self.getEvents(eventKey)
         var removeEvents: [TSTEventObject] = []
         
         for i in 0..<listeners.count {
-            var event = listeners[i]
+            let event = listeners[i]
             
-            if let keyPath = event.forKeyPath {
-                if let handler = event.handler as? (value: T, forKeyPath: String?) -> Void where forKeyPath == keyPath {
-                    handler(value: value, forKeyPath: forKeyPath)
-                }
-            } else {
-                if let handler = event.handler as? (value: T, forKeyPath: String?) -> Void {
-                    handler(value: value, forKeyPath: forKeyPath)
-                }
+            if (event.eventKey as? U) == nil || (event.eventKey as? U) != eventKey {
+                continue
+            }
+            
+            if let keyPath = event.forKeyPath, forKeyPath = forKeyPath where keyPath != forKeyPath {
+                continue
+            }
+            
+            if let handler = event.handler as? (value: T, forKeyPath: String?) -> Void where self.equalsHandlerType(value, handler: event.handler!) {
+                handler(value: value, forKeyPath: forKeyPath)
+                continue
             }
             
             if event.once {
                 removeEvents.append(event)
             }
         }
-        
-        var events = self._events
         
         self._events = self._events.filter({ (event:TSTEventObject) -> Bool in
             return removeEvents.filter({ (remove:TSTEventObject) -> Bool in
@@ -218,7 +223,7 @@ public class TSTEvents:NSObject {
     */
     public func removeObserver<T>(observer observerOrNil: NSObject? = nil, handler handlerOrNil:((value:T, forKeyPath: String?) -> ())?) {
         self._events = self._events.filter({ (event) -> Bool in
-            if let handler = handlerOrNil {
+            if let _ = handlerOrNil {
                 if let left = handlerOrNil, right = (event.handler as? ((value:T, forKeyPath:String?) -> Void)) where left == right {
                     return false
                 }

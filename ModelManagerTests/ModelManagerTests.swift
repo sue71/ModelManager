@@ -55,7 +55,7 @@ class ModelManagerTests: XCTestCase {
         let expectation = expectationWithDescription(__FUNCTION__)
         
         model.addObserver(eventKey: "example", once: true) { (value:String, forKeyPath:String?) -> () in
-            XCTAssertEqual("args", value, "")
+            XCTAssertEqual(value, "args", "")
             expectation.fulfill()
         }
         
@@ -126,7 +126,7 @@ class ModelManagerTests: XCTestCase {
             expectation.fulfill()
         }
         
-        eventemitter.removeObserving(target: model)
+        eventemitter.removeObserving(model)
         
         model.sendEvent("hogehoge", value: "hogehoge")
         sampleModel.sendEvent("hogehoge", value: "hogehoge")
@@ -138,7 +138,7 @@ class ModelManagerTests: XCTestCase {
     
     func testSetAndGetModel() {
         modelManager.setModel(model)
-        XCTAssertEqual(modelManager.getModel("model")!.key as! String, "model", "")
+        XCTAssertEqual(modelManager.getModel("model"), self.model, "")
     }
     
     func testRemoveModel() {
@@ -149,7 +149,7 @@ class ModelManagerTests: XCTestCase {
     func testCollectionAdd() {
         let expectation = expectationWithDescription(__FUNCTION__)
         self.collection.addObserver(eventKey: collection.keyForAdd(), once: false) { (value:TSTModelBase, forKeyPath) -> () in
-            XCTAssertEqual(value.key as! String, "model", "")
+            XCTAssertEqual(value as! TSTModelBase, self.model, "")
             expectation.fulfill()
         }
         
