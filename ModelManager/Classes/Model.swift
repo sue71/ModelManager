@@ -21,12 +21,11 @@ public class TSTModelBase:TSTEvents {
     changeイベントを伝搬する
     :param: changed 変更されたパラメータ
     */
-    public func sendChangeEvent<T>(changed: T, forKeyPath: String? = nil) {
+    public func sendChangeEvent(changed: Any, forKeyPath: String? = nil) {
         self.sendEvent(self.keyForChange(), value: changed, forKeyPath: forKeyPath)
-        self.sendEvent(self.keyForChange(), value: changed as Any, forKeyPath: forKeyPath)
     }
     
-    public func observeChangeEvent<T>(observer: NSObject? = nil, forKeyPath: String? = nil, once: Bool, handler: ((value: T, forKeyPath: String?) -> ())) {
+    public func observeChangeEvent(observer: NSObject, forKeyPath: String? = nil, once: Bool, handler: ((value: Any, forKeyPath: String?) -> ())) {
         self.addObserver(observer, eventKey: self.keyForChange(), forKeyPath: forKeyPath, once: once, handler: handler)
     }
     

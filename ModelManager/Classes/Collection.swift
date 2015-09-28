@@ -26,7 +26,7 @@ public class TSTCollectionBase:TSTModelBase {
     :param: model Model
     */
     public func addModel(model: TSTModelBase) {
-        model.addObserver(self, eventKey: model.keyForChange(), once: false) {[weak self] (value: Any, forKeyPath) -> () in
+        model.addObserver(self, eventKey: model.keyForChange(), forKeyPath: nil, once: false) {[weak self] (value, forKeyPath) -> Void in
             if let blockSelf = self {
                 blockSelf.sendEvent(blockSelf.keyForChange(), value: model)
             }

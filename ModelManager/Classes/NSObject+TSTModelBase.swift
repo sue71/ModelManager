@@ -20,21 +20,21 @@ public extension NSObject {
         }
     }
     
-    public func tst_postChange<T>(value:T, forKeyPath keyPath: String? = nil) {
+    public func tst_postChange(value:Any, forKeyPath keyPath: String? = nil) {
         if self.tst_model == nil {
             self.tst_model = TSTModelBase()
         }
         self.tst_model?.sendChangeEvent(value, forKeyPath: keyPath)
     }
     
-    public func tst_observeChange<T>(observer: NSObject, forKeyPath keyPath: String? = nil, handler: ((value:T, forKeyPath:String?) -> Void)) {
+    public func tst_observeChange(observer: NSObject, forKeyPath keyPath: String? = nil, handler: TSTEventHandler) {
         if self.tst_model == nil {
             self.tst_model = TSTModelBase()
         }
         self.tst_model?.observeChangeEvent(observer, forKeyPath: keyPath, once: false, handler: handler)
     }
     
-    public func tst_observeTo<T>(target: NSObject, forKeyPath keyPath: String? = nil, once: Bool = false, handler: ((value: T, forKeyPath: String?) -> Void)) {
+    public func tst_observeTo(target: NSObject, forKeyPath keyPath: String? = nil, once: Bool = false, handler: TSTEventHandler) {
         if self.tst_model == nil {
             self.tst_model = TSTModelBase()
         }
